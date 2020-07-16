@@ -5,7 +5,7 @@ const authController = require('../controllers/authController.js')
 const authRouter = express.Router()
 
 authRouter.post('/auth/signup-1', authController.signup1)
-authRouter.post('/auth/signup-2', (req, res) => res.send('/auth/signup-2'))
+authRouter.post('/auth/signup-2', authController.signup2)
 authRouter.post('/auth/signin', (req, res) => res.send('/auth/signin'))
 authRouter.post('/auth/signout', (req, res) => res.send('/auth/signout'))
 authRouter.post('/auth/refresh-tokens', (req, res) => res.send('/auth/refresh-tokens'))

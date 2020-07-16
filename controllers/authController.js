@@ -34,3 +34,42 @@ exports.signup1 = async function (req, res) {
 
     return res.json({ success: true })
 }
+
+exports.signup2 = async function (req, res) {
+    const { email, confirmationCode } = req.body
+
+    const user = await UserModel.findOne({ email })
+
+    if (!user || user.isConfirmed) {
+        return res.sendStatus(400)
+    }
+
+    if (user.confirmationCode !== confirmationCode) {
+        user.numberConfirmationAttempts--
+        await user.save()
+
+        if (user.numberConfirmationAttempts > 0) {
+            return res.json({
+                error: {
+                    confirmationCodeFeedback: `Код подтверждения не верный. Осталось ${user.numberConfirmationAttempts} попыток`,
+                    numberConfirmationAttempts: user.numberConfirmationAttempts
+                }
+            })
+        } else {
+            await user.remove()
+
+            return res.json({
+                error: {
+                    confirmationCodeFeedback: 'У вас не осталось попыток',
+                    numberConfirmationAttempts: user.numberConfirmationAttempts
+                }
+            })
+        }
+    }
+
+    user.isConfirmed = true
+    user.numberConfirmationAttempts = 0
+    await user.save()
+
+    return res.json({ success: true })
+}
