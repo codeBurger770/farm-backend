@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const UserModel = require('../models/userModel')
 const getConfirmationCode = require('../utils/getConfirmationCode.js')
@@ -72,4 +73,42 @@ exports.signup2 = async function (req, res) {
     await user.save()
 
     return res.json({ success: true })
+}
+
+exports.signin = async function (req, res) {
+    const { email, password } = req.body
+
+    const user = await UserModel.findOne({ email })
+
+    if (!user) {
+        return res.json({ error: { emailFeedback: 'Пользователя с таким Email не существует' } })
+    }
+
+    if (!user.isConfirmed) {
+        return res.json({ error: { emailFeedback: 'Пользователь не подтвердил свой Email' } })
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if (!isMatch) {
+        return res.json({ error: { passwordFeedback: 'Неверный пароль' } })
+    }
+
+    user.refreshToken = jwt.sign({ id: user._id }, process.env.APP_SECRET_KEY, { expiresIn: '24h' })
+    await user.save()
+
+    return res.json({
+        success: {
+            accessToken: jwt.sign({ id: user._id }, process.env.APP_SECRET_KEY, { expiresIn: '24h' }),
+            refreshToken: user.refreshToken
+        }
+    })
+}
+
+exports.signout = function (req, res) {
+    return res.json({ success: 'authController signout' })
+}
+
+exports.refreshTokens = function (req, res) {
+    return res.json({ success: 'authController refreshTokens' })
 }
