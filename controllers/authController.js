@@ -134,3 +134,41 @@ exports.changePassword1 = async function (req, res) {
 
     return res.json({ success: true })
 }
+
+exports.changePassword2 = async function (req, res) {
+    const { email, password, confirmationCode } = req.body
+
+    const user = await UserModel.findOne({ email })
+
+    if (!user || !user.isConfirmed) {
+        return res.sendStatus(400)
+    }
+
+    if (user.confirmationCode !== confirmationCode) {
+        user.numberConfirmationAttempts--
+        await user.save()
+
+        if (user.numberConfirmationAttempts > 0) {
+            return res.json({
+                error: {
+                    confirmationCodeFeedback: `Код подтверждения не верный. Осталось ${user.numberConfirmationAttempts} попыток`,
+                    numberConfirmationAttempts: user.numberConfirmationAttempts
+                }
+            })
+        } else {
+            return res.json({
+                error: {
+                    confirmationCodeFeedback: 'У вас не осталось попыток',
+                    numberConfirmationAttempts: user.numberConfirmationAttempts
+                }
+            })
+        }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    user.password = hashedPassword
+    user.numberConfirmationAttempts = 0
+    await user.save()
+
+    return res.json({ success: true })
+}

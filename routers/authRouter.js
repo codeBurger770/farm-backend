@@ -10,6 +10,6 @@ authRouter.post('/auth/signin', authController.signin)
 authRouter.post('/auth/signout', authController.signout)
 authRouter.post('/auth/refresh-tokens', authController.refreshTokens)
 authRouter.post('/auth/change-password-1', authController.changePassword1)
-authRouter.post('/auth/change-password-2', (req, res) => res.send('/auth/change-password-2'))
+authRouter.post('/auth/change-password-1', authController.changePassword2)
 
 module.exports = authRouter
