@@ -112,3 +112,25 @@ exports.signout = function (req, res) {
 exports.refreshTokens = function (req, res) {
     return res.json({ success: 'authController refreshTokens' })
 }
+
+exports.changePassword1 = async function (req, res) {
+    const { email } = req.body
+
+    const user = await UserModel.findOne({ email })
+
+    if (!user) {
+        return res.json({ error: { emailFeedback: 'Пользователя с таким Email не существует' } })
+    }
+
+    if (!user.isConfirmed) {
+        return res.json({ error: { emailFeedback: 'Пользователь не подтвердил свой Email' } })
+    }
+
+    user.confirmationCode = getConfirmationCode()
+    user.numberConfirmationAttempts = 3
+    await user.save()
+
+    sendMail(email, 'Подтвердите свой Email', `Код подтверждения: ${user.confirmationCode}`)
+
+    return res.json({ success: true })
+}
