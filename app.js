@@ -8,6 +8,7 @@ dotenv.config()
 
 const app = express()
 
+app.use(express.json())
 app.use('/api', authRouter)
 
 mongoose.connect(process.env.DB_URI, {

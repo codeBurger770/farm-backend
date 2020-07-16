@@ -1,8 +1,10 @@
 const express = require('express')
 
+const authController = require('../controllers/authController.js')
+
 const authRouter = express.Router()
 
-authRouter.post('/auth/signup-1', (req, res) => res.send('/auth/signup-1'))
+authRouter.post('/auth/signup-1', authController.signup1)
 authRouter.post('/auth/signup-2', (req, res) => res.send('/auth/signup-2'))
 authRouter.post('/auth/signin', (req, res) => res.send('/auth/signin'))
 authRouter.post('/auth/signout', (req, res) => res.send('/auth/signout'))
